@@ -3,22 +3,22 @@ import { GoogleGenAI } from "@google/genai";
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 function jsonResponse(body: object, status = 200) {
-  return {
-    statusCode: status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-    body: JSON.stringify(body),
-  };
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+  });
 }
 
 const handler: Handler = async (event) => {
   // CORS preflight
   if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 204, headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type" }, body: "" };
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
   if (event.httpMethod !== "POST") {
