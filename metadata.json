@@ -1,0 +1,7 @@
+{
+  "name": "Joseph Tumwebaze - AI TPM Portfolio",
+  "description": "A high-end Apple-style portfolio for a Technical Program Manager specializing in Agentic AI and global scale releases.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
