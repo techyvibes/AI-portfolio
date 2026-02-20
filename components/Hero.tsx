@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const Hero: React.FC = () => {
-  const [profileImg, setProfileImg] = useState<string>('profile.jpg');
+  const [profileImg, setProfileImg] = useState<string>('/profile.png');
   const [hasError, setHasError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -18,11 +18,8 @@ const Hero: React.FC = () => {
   };
 
   const handleImageError = () => {
-    if (profileImg === 'profile.jpg') {
-      // If .jpg fails, try .png
-      setProfileImg('profile.png');
-    } else if (profileImg === 'profile.png') {
-      // If both fail, use the professional placeholder
+    if (profileImg === '/profile.png') {
+      // Fallback if profile.png is missing (e.g. old deploy)
       setProfileImg('https://images.unsplash.com/photo-1531384441138-2736e62e0919?auto=format&fit=crop&q=80&w=800');
       setHasError(true);
     }
@@ -63,7 +60,7 @@ const Hero: React.FC = () => {
         <div 
           className="relative inline-block mb-12 group cursor-pointer"
           onClick={handleCircleClick}
-          title="Click to upload your photo if profile.jpg is not found"
+          title="Click to upload a different photo"
         >
           {/* Animated Gradient Border Layer */}
           <div className="absolute -inset-1.5 bg-gradient-to-tr from-[#4285F4] via-[#EA4335] to-[#34A853] rounded-full blur-md opacity-20 group-hover:opacity-40 transition duration-1000"></div>
