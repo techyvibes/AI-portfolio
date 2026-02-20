@@ -20,7 +20,8 @@ const IndustryInsights: React.FC = () => {
       setSources(nextSources);
     } catch (error) {
       console.error("Search error:", error);
-      setResult("Unable to retrieve insights. Please check your API key quotas or network connection.");
+      const message = error instanceof Error ? error.message : "Unknown error";
+      setResult(`Unable to retrieve insights. ${message}`);
     } finally {
       setLoading(false);
     }
@@ -32,7 +33,7 @@ const IndustryInsights: React.FC = () => {
         <div className="text-center mb-16 reveal">
           <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] mb-4 tracking-tight">Industry Intelligence.</h2>
           <p className="text-[#86868b] text-xl font-light">
-             Real-time, grounded insights powered by Gemini.
+             AI-powered insights from Gemini (free tier, no web search).
           </p>
         </div>
 

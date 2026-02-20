@@ -64,19 +64,13 @@ const handler: Handler = async (event) => {
     if (action === "search") {
       const { query } = body;
       if (!query) return jsonResponse({ error: "Missing 'query' for search" }, 400);
+      // Plain generateContent only (no googleSearch tool) — stays within free tier, no billable grounding.
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Provide a concise, professional summary answering the following question using real-time search data. Focus on technical accuracy suitable for a TPM audience. Query: ${query}`,
-        config: { tools: [{ googleSearch: {} }] },
+        model: "gemini-2.5-flash",
+        contents: `Provide a concise, professional summary answering the following question. Focus on technical accuracy suitable for a TPM audience. Query: ${query}`,
       });
       const text = response.text ?? "No insights found.";
-      const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-      const sources = (chunks as { web?: { uri?: string; title?: string } }[])
-        .map((c) => c.web)
-        .filter((w): w is { uri: string; title: string } => !!w?.uri && !!w?.title)
-        .map((w) => ({ title: w.title, uri: w.uri }));
-      const uniqueSources = Array.from(new Map(sources.map((s) => [s.uri, s])).values());
-      return jsonResponse({ text, sources: uniqueSources });
+      return jsonResponse({ text, sources: [] });
     }
 
     if (action === "editImage") {
