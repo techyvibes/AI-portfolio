@@ -1,4 +1,4 @@
-import type { Handler } from "@netlify/functions";
+import type { Context } from "@netlify/functions";
 import { GoogleGenAI } from "@google/genai";
 
 const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
@@ -15,13 +15,15 @@ function jsonResponse(body: object, status = 200) {
   });
 }
 
-const handler: Handler = async (event) => {
+export default async (request: Request, _context?: Context) => {
+  const method = request.method?.toUpperCase() ?? "";
+
   // CORS preflight
-  if (event.httpMethod === "OPTIONS") {
+  if (method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
-  if (event.httpMethod !== "POST") {
+  if (method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
@@ -31,7 +33,7 @@ const handler: Handler = async (event) => {
 
   let body: { action?: string; prompt?: string; query?: string; base64Image?: string; aspectRatio?: string };
   try {
-    body = JSON.parse(event.body || "{}");
+    body = (await request.json()) ?? {};
   } catch {
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
@@ -117,5 +119,3 @@ const handler: Handler = async (event) => {
     return jsonResponse({ error: message }, 502);
   }
 };
-
-export default handler;
