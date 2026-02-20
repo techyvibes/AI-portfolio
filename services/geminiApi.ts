@@ -11,9 +11,12 @@ async function postGemini<T>(payload: object): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  const data = await res.json().catch(() => ({}));
+  const contentType = res.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? await res.json().catch(() => ({}))
+    : {};
   if (!res.ok) {
-    const msg = (data as { error?: string }).error ?? `Request failed (${res.status})`;
+    const msg = (data as { error?: string }).error ?? `Request failed (${res.status}). Check Netlify function logs.`;
     throw new Error(msg);
   }
   return data as T;

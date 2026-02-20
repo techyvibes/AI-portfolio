@@ -38,7 +38,16 @@ const handler: Handler = async (event) => {
 
   const { action } = body;
   if (!action) {
-    return jsonResponse({ error: "Missing 'action' in body. Use: generateImage, search, or editImage." }, 400);
+    return jsonResponse({ error: "Missing 'action' in body. Use: ping, generateImage, search, or editImage." }, 400);
+  }
+
+  // Diagnostic: no Gemini call, just confirm function + env
+  if (action === "ping") {
+    return jsonResponse({
+      ok: true,
+      keyConfigured: !!apiKey,
+      message: apiKey ? "Function and API key are configured." : "Function works but GEMINI_API_KEY / API_KEY is missing in Netlify.",
+    });
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -64,9 +73,9 @@ const handler: Handler = async (event) => {
     if (action === "search") {
       const { query } = body;
       if (!query) return jsonResponse({ error: "Missing 'query' for search" }, 400);
-      // Plain generateContent only (no googleSearch tool) — stays within free tier, no billable grounding.
+      // Plain generateContent only (no googleSearch tool) — free tier, no billable grounding.
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-1.5-flash",
         contents: `Provide a concise, professional summary answering the following question. Focus on technical accuracy suitable for a TPM audience. Query: ${query}`,
       });
       const text = response.text ?? "No insights found.";
@@ -96,7 +105,14 @@ const handler: Handler = async (event) => {
 
     return jsonResponse({ error: `Unknown action: ${action}` }, 400);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Gemini request failed";
+    let message = "Gemini request failed";
+    if (err instanceof Error) {
+      message = err.message;
+      // Unwrap common Google API error shapes
+      const anyErr = err as { status?: number; statusMessage?: string; code?: number; details?: string };
+      if (anyErr.status) message = `${message} (HTTP ${anyErr.status})`;
+      if (anyErr.statusMessage) message = `${message} - ${anyErr.statusMessage}`;
+    }
     console.error("Gemini proxy error:", err);
     return jsonResponse({ error: message }, 502);
   }
